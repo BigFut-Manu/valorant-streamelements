@@ -13,112 +13,56 @@ export default async function handler(req, res) {
     return res.status(500).send("Configurazione API incompleta");
   }
 
-  async function getApi(url) {
+  try {
+    const url =
+      "https://api.henrikdev.xyz/valorant/v3/mmr/" +
+      `${encodeURIComponent(VAL_REGION)}/pc/` +
+      `${encodeURIComponent(RIOT_NAME)}/` +
+      `${encodeURIComponent(RIOT_TAG)}`;
+
     const response = await fetch(url, {
       headers: { Authorization: HENRIK_API_KEY }
     });
 
     if (!response.ok) {
-      throw new Error(`HenrikDev HTTP ${response.status}`);
+      return res.status(502).send("Errore nel recupero delle statistiche Season");
     }
 
-    return response.json();
-  }
+    const result = await response.json();
+    const data = result?.data;
+    const seasonal = data?.seasonal;
 
-  try {
-    const base = "https://api.henrikdev.xyz/valorant";
-    const region = encodeURIComponent(VAL_REGION);
-    const name = encodeURIComponent(RIOT_NAME);
-    const tag = encodeURIComponent(RIOT_TAG);
-
-    const [mmrResult, matchesResult] = await Promise.all([
-      getApi(`${base}/v3/mmr/${region}/pc/${name}/${tag}`),
-      getApi(`${base}/v3/matches/${region}/${name}/${tag}?size=20`)
-    ]);
-
-    const mmr = mmrResult?.data;
-    const seasonal = mmr?.seasonal;
-
-    if (!mmr || !Array.isArray(seasonal) || !seasonal.length) {
+    if (!data || !Array.isArray(seasonal) || seasonal.length === 0) {
       return res.status(502).send("Statistiche Season non disponibili");
     }
 
+    // Ultimo atto restituito dall'API
     const latestSeason = seasonal[seasonal.length - 1];
-    const seasonId = latestSeason?.season?.id;
 
-    const matches = Array.isArray(matchesResult?.data)
-      ? matchesResult.data
-      : [];
+    const total = Number(latestSeason.games ?? 0);
+    const wins = Number(latestSeason.wins ?? 0);
 
-    let winsRecent = 0;
-    let lossesRecent = 0;
-    let drawsRecent = 0;
-    let kills = 0;
-    let deaths = 0;
-    let counted = 0;
+    // Stima delle sconfitte: non distingue eventuali pareggi.
+    const losses = Math.max(0, total - wins);
 
-    for (const match of matches) {
-      const meta = match?.metadata;
+    const currentRank = data.current?.tier?.name ?? "Unrated";
+    const rr = data.current?.rr;
 
-      if (
-        meta?.mode !== "Competitive" ||
-        meta?.season_id !== seasonId
-      ) {
-        continue;
-      }
+    const peak =
+      data.peak?.tier?.name ??
+      data.peak?.rank?.name ??
+      "Non disponibile";
 
-      const allPlayers = [
-        ...(Array.isArray(match.players?.red) ? match.players.red : []),
-        ...(Array.isArray(match.players?.blue) ? match.players.blue : [])
-      ];
-
-      const player = allPlayers.find(p =>
-        String(p.name ?? "").toLowerCase() === RIOT_NAME.toLowerCase() &&
-        String(p.tag ?? "").toLowerCase() === RIOT_TAG.toLowerCase()
-      );
-
-      if (!player) continue;
-
-      kills += Number(player.stats?.kills ?? 0);
-      deaths += Number(player.stats?.deaths ?? 0);
-      counted++;
-
-      const teamKey = String(player.team ?? "").toLowerCase();
-      const result = match.teams?.[teamKey];
-
-      if (!result || typeof result.has_won !== "boolean") {
-        drawsRecent++;
-      } else if (result.has_won) {
-        winsRecent++;
-      } else {
-        lossesRecent++;
-      }
-    }
-
-    const totalSeason = Number(latestSeason.games ?? 0);
-    const winsSeason = Number(latestSeason.wins ?? 0);
-    const lossesSeason = Math.max(0, totalSeason - winsSeason);
-
-    const kd = deaths > 0
-      ? (kills / deaths).toFixed(2)
-      : kills > 0
-        ? kills.toFixed(2)
-        : "N/D";
-
-    const currentRank = mmr.current?.tier?.name ?? "Unrated";
-    const rr = mmr.current?.rr;
-    const peak = mmr.peak?.tier?.name ?? "Non disponibile";
+    const rrText = Number.isFinite(Number(rr))
+      ? ` ${rr} RR`
+      : "";
 
     const output =
-      `Season (${latestSeason.season?.short ?? "atto corrente"}): ` +
-      `Partite Totali: ${totalSeason} | ` +
-      `Vinte: ${winsSeason} | ` +
-      `Perse stimate: ${lossesSeason} | ` +
-      `Vinte/Perse/Pareggiate recenti: ${winsRecent}/${lossesRecent}/${drawsRecent} | ` +
-      `K/D recente: ${counted > 0 ? kd : "N/D"} | ` +
-      `Rank attuale: ${currentRank}` +
-      (Number.isFinite(Number(rr)) ? ` ${rr} RR` : "") +
-      ` | Rank Peak: ${peak}`;
+      `Partite Totali: ${total} | ` +
+      `Vinte: ${wins} | ` +
+      `Perse: ${losses} | ` +
+      `Rank attuale: ${currentRank}${rrText} | ` +
+      `Rank Peak: ${peak}`;
 
     return res.status(200).send(output);
   } catch (error) {
