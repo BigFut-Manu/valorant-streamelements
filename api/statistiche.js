@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const url =
       `https://api.henrikdev.xyz/valorant/v3/matches/` +
       `${encodeURIComponent(REGION)}/${encodeURIComponent(NAME)}/` +
-      `${encodeURIComponent(TAG)}?size=1`;
+      `${encodeURIComponent(TAG)}?size=10000`;
 
     const response = await fetch(url, {
       headers: { Authorization: API_KEY }
