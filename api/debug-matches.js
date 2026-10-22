@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       "https://api.henrikdev.xyz/valorant/v3/matches/" +
       `${encodeURIComponent(VAL_REGION)}/` +
       `${encodeURIComponent(RIOT_NAME)}/` +
-      `${encodeURIComponent(RIOT_TAG)}?size=3`;
+      `${encodeURIComponent(RIOT_TAG)}?size=1`;
 
     const response = await fetch(url, {
       headers: { Authorization: HENRIK_API_KEY }
@@ -30,17 +30,20 @@ export default async function handler(req, res) {
       });
     }
 
-    const players = match.players?.all ?? [];
+    const players = match.players ?? {};
+
+    function sample(value) {
+      if (Array.isArray(value)) return value[0] ?? null;
+      return value && typeof value === "object" ? value : null;
+    }
 
     return res.status(200).json({
-      metadata: match.metadata,
-      playerExample: players[0] ?? null,
-      teams: match.teams,
-      playerNames: players.map(p => ({
-        name: p.name,
-        tag: p.tag,
-        puuid: p.puuid
-      }))
+      playerKeys: Object.keys(players),
+      redExample: sample(players.red),
+      blueExample: sample(players.blue),
+      allExample: sample(players.all),
+      seasonId: match.metadata?.season_id,
+      mode: match.metadata?.mode
     });
   } catch {
     return res.status(502).json({
