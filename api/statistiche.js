@@ -11,9 +11,9 @@ export default async function handler(req, res) {
 
   try {
     const url =
-      `https://api.henrikdev.xyz/valorant/v4/matches/` +
+      `https://api.henrikdev.xyz/valorant/v3/matches/` +
       `${encodeURIComponent(REGION)}/${encodeURIComponent(NAME)}/` +
-      `${encodeURIComponent(TAG)}?size=10000`;
+      `${encodeURIComponent(TAG)}?size=100`;
 
     const response = await fetch(url, {
       headers: { Authorization: API_KEY }
