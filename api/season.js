@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       `Partite Totali: ${total} | ` +
       `Vinte: ${wins} | ` +
       `Perse: ${losses} | ` +
-      `Rank attuale: ${currentRank}${rrText} | ` +
+      `Rank attuale: ${currentRank} (${rrText}) | ` +
       `Rank Peak: ${peak}`;
 
     return res.status(200).send(output);
