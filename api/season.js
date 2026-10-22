@@ -54,7 +54,7 @@ export default async function handler(req, res) {
       "Non disponibile";
 
     const rrText = Number.isFinite(Number(rr))
-      ? ` ${rr} RR`
+      ? `${rr}/100`
       : "";
 
     const output =
