@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     const PAGE_SIZE = 10;
-    const MAX_PAGES = 10;
+    const MAX_PAGES = 4;
     const matchesById = new Map();
 
     // Recupera fino a 100 partite tramite la paginazione v4.
