@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     const url =
-      `https://api.henrikdev.xyz/valorant/v3/matches/` +
+      `https://api.henrikdev.xyz/valorant/v4/matches/` +
       `${encodeURIComponent(REGION)}/${encodeURIComponent(NAME)}/` +
       `${encodeURIComponent(TAG)}?size=10000`;
 
