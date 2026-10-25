@@ -386,17 +386,81 @@
       return `${name}#${tag}`;
     }
 
-    function renderOutput() {
-      const t = translations[language];
-      $("outputText").textContent = t.examples[selectedCommand](playerId());
+    
+let requestNumber = 0;
 
-      document.querySelectorAll(".command-card").forEach(card => {
-        card.classList.toggle(
-          "active",
-          card.dataset.command === selectedCommand
-        );
-      });
+async function renderOutput() {
+  const currentRequest = ++requestNumber;
+  const name = document.getElementById("riotName").value.trim();
+  const tag = document.getElementById("riotTag").value.trim();
+  const output = document.getElementById("outputText");
+  const t = translations[language];
+
+  document.querySelectorAll(".command-card").forEach(card => {
+    card.classList.toggle(
+      "active",
+      card.dataset.command === selectedCommand
+    );
+  });
+
+  // Gli altri comandi saranno collegati ai rispettivi endpoint.
+  if (selectedCommand !== "rank") {
+    output.textContent =
+      language === "it"
+        ? "Questo comando deve ancora essere collegato all'API."
+        : "This command still needs to be connected to the API.";
+    return;
+  }
+
+  if (!name || !tag) {
+    output.textContent =
+      language === "it"
+        ? "Inserisci il Riot ID e il Tag per vedere il rank."
+        : "Enter your Riot ID and tagline to see the rank.";
+    return;
+  }
+
+  output.textContent =
+    language === "it" ? "Caricamento rank..." : "Loading rank...";
+
+  try {
+    const params = new URLSearchParams({ name, tag });
+    const response = await fetch(`/api/site-rank?${params.toString()}`);
+    const data = await response.json();
+
+    // Evita che una richiesta vecchia sovrascriva quella più recente.
+    if (currentRequest !== requestNumber) return;
+
+    if (!response.ok) {
+      output.textContent =
+        data.error ||
+        (language === "it"
+          ? "Impossibile recuperare il rank."
+          : "Unable to retrieve rank.");
+      return;
     }
+
+    const rrText =
+      data.rr === null ? "RR N/D" : `${data.rr}/100 RR`;
+
+    const changeText =
+      data.lastChange === null
+        ? "N/D"
+        : `${data.lastChange > 0 ? "+" : ""}${data.lastChange}`;
+
+    output.textContent =
+      `${data.player} | ${data.rank} (${rrText}) ` +
+      `(${changeText} nell'ultima) | Rank Peak: ${data.peak}`;
+  } catch (error) {
+    if (currentRequest !== requestNumber) return;
+
+    output.textContent =
+      language === "it"
+        ? "Errore di connessione. Riprova."
+        : "Connection error. Please try again.";
+  }
+}
+
 
     function setLanguage(nextLanguage) {
       language = nextLanguage;
