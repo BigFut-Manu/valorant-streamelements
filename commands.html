@@ -1,0 +1,447 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALORANT Twitch Bot — Commands</title>
+  <style>
+    :root {
+      --red: #ff4655;
+      --bg: #101014;
+      --panel: #19191f;
+      --text: #f4f4f5;
+      --muted: #aaaab5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 20px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #303038;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .logo span { color: var(--red); }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    a, button {
+      cursor: pointer;
+      text-decoration: none;
+      font: inherit;
+    }
+
+    .nav-button, .lang-button {
+      border: 1px solid #44444e;
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: var(--text);
+      background: transparent;
+    }
+
+    .nav-button:hover, .lang-button:hover {
+      border-color: var(--red);
+    }
+
+    main {
+      width: min(1000px, 90%);
+      margin: 55px auto;
+    }
+
+    .eyebrow {
+      color: var(--red);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 12px;
+    }
+
+    h1 {
+      font-size: clamp(34px, 6vw, 56px);
+      margin: 12px 0;
+    }
+
+    .intro {
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 700px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid #303038;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 28px;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      background: #101014;
+      border: 1px solid #44444e;
+      border-radius: 6px;
+      color: white;
+      padding: 13px;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: 1px solid var(--red);
+      border-color: var(--red);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 12px;
+    }
+
+    .command-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .command-card {
+      text-align: left;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid #303038;
+      border-radius: 10px;
+      padding: 20px;
+      transition: border-color .15s, transform .15s;
+    }
+
+    .command-card:hover, .command-card.active {
+      border-color: var(--red);
+      transform: translateY(-2px);
+    }
+
+    .command-name {
+      color: var(--red);
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .command-desc {
+      display: block;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .output {
+      margin-top: 22px;
+      border-left: 3px solid var(--red);
+      background: #19191f;
+      padding: 20px;
+      border-radius: 0 8px 8px 0;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .output-label {
+      color: var(--red);
+      font-weight: bold;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .disclaimer {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 20px;
+    }
+
+    footer {
+      border-top: 1px solid #303038;
+      padding: 25px 7%;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      margin-top: 65px;
+    }
+
+    @media (max-width: 600px) {
+      .fields, .command-grid { grid-template-columns: 1fr; }
+      main { margin-top: 35px; }
+      .panel { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">VALORANT <span>BOT</span></div>
+    <nav>
+      <a class="nav-button" href="index_bilingue.html" id="homeLink">Home</a>
+      <button class="lang-button" id="langToggle" type="button">Italiano</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="eyebrow" id="eyebrow">Interactive command preview</div>
+    <h1 id="pageTitle">Bot Commands</h1>
+    <p class="intro" id="intro">
+      Explore the available Twitch chat commands. Enter a Riot ID and tagline,
+      then select a command to preview an example response.
+    </p>
+
+    <section class="panel">
+      <h2 id="profileTitle">Player profile</h2>
+      <p class="intro" id="profileIntro">
+        Enter your Riot ID details to personalize the example responses.
+      </p>
+
+      <div class="fields">
+        <div>
+          <label for="riotName" id="nameLabel">Riot ID name</label>
+          <input id="riotName" type="text" maxlength="32"
+                 placeholder="e.g. ImLogan4K" autocomplete="off">
+        </div>
+        <div>
+          <label for="riotTag" id="tagLabel">Tagline</label>
+          <input id="riotTag" type="text" maxlength="16"
+                 placeholder="e.g. 811" autocomplete="off">
+        </div>
+      </div>
+      <p class="hint" id="profileHint">
+        Your Riot ID is used only to personalize the local preview on this page.
+      </p>
+    </section>
+
+    <section>
+      <h2 id="commandsTitle" style="margin-top:36px">Available Commands</h2>
+      <p class="intro" id="commandsIntro">
+        Select a command to display an example chat response.
+      </p>
+
+      <div class="command-grid">
+        <button class="command-card active" data-command="rank" type="button">
+          <span class="command-name">!rank</span>
+          <span class="command-desc" id="descRank">
+            Shows the player's current competitive rank.
+          </span>
+        </button>
+
+        <button class="command-card" data-command="season" type="button">
+          <span class="command-name">!season</span>
+          <span class="command-desc" id="descSeason">
+            Shows competitive season statistics.
+          </span>
+        </button>
+
+        <button class="command-card" data-command="lastmatch" type="button">
+          <span class="command-name">!lastmatch</span>
+          <span class="command-desc" id="descLast">
+            Shows a summary of the latest match.
+          </span>
+        </button>
+
+        <button class="command-card" data-command="record" type="button">
+          <span class="command-name">!record</span>
+          <span class="command-desc" id="descRecord">
+            Shows a personal performance record.
+          </span>
+        </button>
+      </div>
+
+      <div class="output" aria-live="polite">
+        <div class="output-label" id="outputLabel">Example response</div>
+        <div id="outputText"></div>
+      </div>
+
+      <p class="disclaimer" id="disclaimer">
+        These are illustrative examples, not live player statistics. Actual
+        responses depend on the bot implementation, API access, and available
+        match data.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div id="footerText">
+      This is an independent community project and is not affiliated with,
+      endorsed by, or sponsored by Riot Games. VALORANT and Riot Games are
+      trademarks of Riot Games, Inc.
+    </div>
+  </footer>
+
+  <script>
+    const translations = {
+      en: {
+        home: "Home",
+        toggle: "Italiano",
+        eyebrow: "Interactive command preview",
+        title: "Bot Commands",
+        intro: "Explore the available Twitch chat commands. Enter a Riot ID and tagline, then select a command to preview an example response.",
+        profileTitle: "Player profile",
+        profileIntro: "Enter your Riot ID details to personalize the example responses.",
+        nameLabel: "Riot ID name",
+        tagLabel: "Tagline",
+        namePlaceholder: "e.g. ImLogan4K",
+        tagPlaceholder: "e.g. 811",
+        hint: "Your Riot ID is used only to personalize the local preview on this page.",
+        commandsTitle: "Available Commands",
+        commandsIntro: "Select a command to display an example chat response.",
+        descRank: "Shows the player's current competitive rank.",
+        descSeason: "Shows competitive season statistics.",
+        descLast: "Shows a summary of the latest match.",
+        descRecord: "Shows a personal performance record.",
+        outputLabel: "Example response",
+        disclaimer: "These are illustrative examples, not live player statistics. Actual responses depend on the bot implementation, API access, and available match data.",
+        footer: "This is an independent community project and is not affiliated with, endorsed by, or sponsored by Riot Games. VALORANT and Riot Games are trademarks of Riot Games, Inc.",
+        defaultName: "Player",
+        examples: {
+          rank: (id) => `${id} | Current Rank: Diamond 2 | RR: 64 | Level: 178`,
+          season: (id) => `${id} | Season: Competitive stats preview | Wins: 42 | Losses: 35 | Win Rate: 54.5%`,
+          lastmatch: (id) => `${id} | Last Match: Competitive | Result: Victory | Map: Ascent | K/D/A: 21/16/7`,
+          record: (id) => `${id} | Personal Record: 32 kills | Best Agent: Clove | Example data`
+        }
+      },
+      it: {
+        home: "Home",
+        toggle: "English",
+        eyebrow: "Anteprima interattiva dei comandi",
+        title: "Comandi del bot",
+        intro: "Scopri i comandi disponibili nella chat Twitch. Inserisci Riot ID e Tag, poi seleziona un comando per vedere un esempio di risposta.",
+        profileTitle: "Profilo giocatore",
+        profileIntro: "Inserisci i dati del tuo Riot ID per personalizzare gli esempi.",
+        nameLabel: "Nome Riot ID",
+        tagLabel: "Tag",
+        namePlaceholder: "es. ImLogan4K",
+        tagPlaceholder: "es. 811",
+        hint: "Il Riot ID serve solo a personalizzare l'anteprima locale di questa pagina.",
+        commandsTitle: "Comandi disponibili",
+        commandsIntro: "Seleziona un comando per visualizzare un esempio di risposta in chat.",
+        descRank: "Mostra il rank competitivo attuale del giocatore.",
+        descSeason: "Mostra le statistiche della stagione competitiva.",
+        descLast: "Mostra un riepilogo dell'ultima partita.",
+        descRecord: "Mostra un record personale di prestazione.",
+        outputLabel: "Esempio di risposta",
+        disclaimer: "Questi sono esempi dimostrativi, non statistiche reali aggiornate. Le risposte effettive dipendono dal bot, dall'accesso API e dai dati disponibili.",
+        footer: "Questo è un progetto indipendente della community, non affiliato, approvato o sponsorizzato da Riot Games. VALORANT e Riot Games sono marchi di Riot Games, Inc.",
+        defaultName: "Giocatore",
+        examples: {
+          rank: (id) => `${id} | Rank attuale: Diamond 2 | RR: 64 | Livello: 178`,
+          season: (id) => `${id} | Stagione: anteprima statistiche competitive | Vittorie: 42 | Sconfitte: 35 | Win Rate: 54,5%`,
+          lastmatch: (id) => `${id} | Ultima partita: Competitiva | Risultato: Vittoria | Mappa: Ascent | K/D/A: 21/16/7`,
+          record: (id) => `${id} | Record personale: 32 uccisioni | Agente migliore: Clove | Dati dimostrativi`
+        }
+      }
+    };
+
+    let language = "en";
+    let selectedCommand = "rank";
+
+    const $ = (id) => document.getElementById(id);
+
+    function playerId() {
+      const name = $("riotName").value.trim();
+      const tag = $("riotTag").value.trim();
+      const fallback = translations[language].defaultName;
+      if (!name && !tag) return fallback;
+      if (!name) return `${fallback}#${tag}`;
+      if (!tag) return name;
+      return `${name}#${tag}`;
+    }
+
+    function renderOutput() {
+      const t = translations[language];
+      $("outputText").textContent = t.examples[selectedCommand](playerId());
+
+      document.querySelectorAll(".command-card").forEach(card => {
+        card.classList.toggle(
+          "active",
+          card.dataset.command === selectedCommand
+        );
+      });
+    }
+
+    function setLanguage(nextLanguage) {
+      language = nextLanguage;
+      const t = translations[language];
+
+      document.documentElement.lang = language;
+      $("homeLink").textContent = t.home;
+      $("langToggle").textContent = t.toggle;
+      $("eyebrow").textContent = t.eyebrow;
+      $("pageTitle").textContent = t.title;
+      $("intro").textContent = t.intro;
+      $("profileTitle").textContent = t.profileTitle;
+      $("profileIntro").textContent = t.profileIntro;
+      $("nameLabel").textContent = t.nameLabel;
+      $("tagLabel").textContent = t.tagLabel;
+      $("riotName").placeholder = t.namePlaceholder;
+      $("riotTag").placeholder = t.tagPlaceholder;
+      $("profileHint").textContent = t.hint;
+      $("commandsTitle").textContent = t.commandsTitle;
+      $("commandsIntro").textContent = t.commandsIntro;
+      $("descRank").textContent = t.descRank;
+      $("descSeason").textContent = t.descSeason;
+      $("descLast").textContent = t.descLast;
+      $("descRecord").textContent = t.descRecord;
+      $("outputLabel").textContent = t.outputLabel;
+      $("disclaimer").textContent = t.disclaimer;
+      $("footerText").textContent = t.footer;
+
+      renderOutput();
+    }
+
+    document.querySelectorAll(".command-card").forEach(card => {
+      card.addEventListener("click", () => {
+        selectedCommand = card.dataset.command;
+        renderOutput();
+      });
+    });
+
+    $("riotName").addEventListener("input", renderOutput);
+    $("riotTag").addEventListener("input", renderOutput);
+    $("langToggle").addEventListener("click", () => {
+      setLanguage(language === "en" ? "it" : "en");
+    });
+
+    setLanguage("en");
+  </script>
+</body>
+</html>
