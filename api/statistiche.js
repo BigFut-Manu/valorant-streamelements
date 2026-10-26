@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   try {
     // Limite massimo: 1000 partite recuperate.
-    const PAGE_SIZE = 100;
+    const PAGE_SIZE = 10;
     const MAX_PAGES = 10;
     const matchesById = new Map();
 
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         `${encodeURIComponent(REGION)}/pc/` +
         `${encodeURIComponent(NAME)}/` +
         `${encodeURIComponent(TAG)}` +
-        `?size=${PAGE_SIZE}&start=${start}`;
+        `?mode=competitive&size=${PAGE_SIZE}&start=${start}`;
 
       const response = await fetch(url, {
         headers: {
