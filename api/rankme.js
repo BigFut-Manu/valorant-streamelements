@@ -62,11 +62,13 @@ export default async function handler(req, res) {
     const riotName = player.name;
     const riotTag = player.tag;
 
+    
     const rankUrl =
       `https://api.henrikdev.xyz/valorant/v3/mmr/` +
-      `${encodeURIComponent(region)}/` +
+      `${encodeURIComponent(region)}/pc/` +
       `${encodeURIComponent(riotName)}/` +
       `${encodeURIComponent(riotTag)}`;
+
 
     const rankResponse = await fetch(rankUrl, {
       headers: {
