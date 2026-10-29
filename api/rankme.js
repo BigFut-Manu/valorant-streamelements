@@ -74,12 +74,24 @@ export default async function handler(req, res) {
       },
     });
 
-    const result = await rankResponse.json();
-
-    if (!rankResponse.ok || !result.data) {
-      console.error("HenrikDev response:", rankResponse.status);
+    
+    const responseText = await rankResponse.text();
+    
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      result = null;
+    }
+    
+    if (!rankResponse.ok || !result?.data) {
+      console.error("HenrikDev error:", {
+        status: rankResponse.status,
+        response: responseText.slice(0, 500),
+      });
+    
       return res.status(502).send(
-        `Non riesco a recuperare il rank di ${riotName}#${riotTag}. Riprova più tardi.`
+        `Errore nel recupero del rank (HTTP ${rankResponse.status}). Controlla i log di Vercel.`
       );
     }
 
