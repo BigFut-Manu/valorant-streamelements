@@ -6,6 +6,17 @@ export default async function handler(req, res) {
     return res.status(405).send("Metodo non consentito.");
   }
 
+  const secret = String(req.query.secret || "");
+  const expectedSecret = process.env.LINK_SECRET || "";
+
+  if (
+    !expectedSecret ||
+    secret.length !== expectedSecret.length ||
+    secret !== expectedSecret
+  ) {
+    return res.status(403).send("Richiesta non autorizzata.");
+  }
+
   const twitchUser = String(req.query.user || "")
     .trim()
     .toLowerCase();
