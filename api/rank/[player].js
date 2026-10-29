@@ -71,7 +71,16 @@ export default async function handler(req, res) {
     }
 
     if (!response.ok) {
-      return res.status(502).send("Errore nel recupero del rank");
+      const details = await response.text();
+    
+      console.error("HenrikDev rank error:", {
+        status: response.status,
+        details: details.slice(0, 500)
+      });
+    
+      return res.status(502).send(
+        `Errore HenrikDev (HTTP ${response.status}). Controlla i log.`
+      );
     }
 
     const result = await response.json();
