@@ -95,7 +95,7 @@ export default async function handler(req, res) {
       : "N/D";
 
     return res.status(200).send(
-      `${name}#${tag} | ${rank} (${rrText}) ` +
+      `${rank} (${rrText}) ` +
       `(${changeText} nell'ultima) | Rank Peak: ${peak}`
     );
   } catch (error) {
