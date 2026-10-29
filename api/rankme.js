@@ -97,17 +97,27 @@ export default async function handler(req, res) {
       );
     }
 
-    const current = result.data.current;
-    const tier = current?.tier?.name || "Rank non disponibile";
-    const rr = current?.rr;
+    
+  const current = result.data.current;
+  
+  const tier = current?.tier?.name || "Rank non disponibile";
+  const rr = current?.rr;
+  const lastChange = current?.last_change;
+  
+  const peak = result.data.peak?.tier?.name || "Non disponibile";
+  
+  const rrText = Number.isFinite(Number(rr))
+    ? `(${rr}/100 RR)`
+    : "";
+  
+  const changeText = Number.isFinite(Number(lastChange))
+    ? ` (${Number(lastChange) > 0 ? "+" : ""}${lastChange} nell'ultima)`
+    : "";
+  
+  return res.status(200).send(
+    `${tier} ${rrText}${changeText} | Rank Peak: ${peak}`
+  );
 
-    const rrText = Number.isFinite(Number(rr))
-      ? ` - ${rr} RR`
-      : "";
-
-    return res.status(200).send(
-      `${riotName}#${riotTag}: ${tier}${rrText}`
-    );
   } catch (error) {
     console.error("Rankme endpoint error:", error);
     return res.status(500).send("Errore interno durante il recupero del rank.");
